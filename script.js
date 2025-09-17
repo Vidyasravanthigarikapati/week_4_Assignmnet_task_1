@@ -1,30 +1,55 @@
 require([
-      "esri/views/MapView",
-      "esri/WebMap",
-      "dojo/domReady!"
-    ], function(
-      MapView, WebMap
-    ) {
+  "esri/Map",
+  "esri/views/MapView",
+  "esri/layers/FeatureLayer"
+], function (Map, MapView, FeatureLayer) {
 
-      /************************************************************
-       * Creates a new WebMap instance. A WebMap must reference
-       * a PortalItem ID that represents a WebMap saved to
-       * arcgis.com or an on-premise portal.
-       *
-       * To load a WebMap from an on-premise portal, set the portal
-       * url with esriConfig.portalUrl.
-       ************************************************************/
-      var webmap = new WebMap({
-        portalItem: { // autocasts as new PortalItem()
-          id: "b43f6b54917e4b2f953b27f4728b72db"
-        }
-      });
+  var map = new Map({
+    basemap: "streets"
+  });
 
-      /************************************************************
-       * Set the WebMap instance to the map property in a MapView.
-       ************************************************************/
-      var view = new MapView({
-        map: webmap,
-        container: "viewDiv"
-      });
-    });
+  var view = new MapView({
+    container: "viewDiv",
+    map: map,
+    center: [-90.1994, 38.6270], // Center over St. Louis
+    zoom: 12
+  });
+
+  // Popup Template showing all fields
+  var template = {
+    title: "Neighborhood: {NHD_NAME}",
+    content: `
+      <b>FID:</b> {FID}<br>
+      <b>Neighborhood Number:</b> {NHD_NUM}<br>
+      <b>Angle:</b> {ANGLE}<br>
+      <b>Neighborhood Number Text:</b> {NHD_NUMTXT}<br>
+      <b>Neighborhood Number ST:</b> {NHD_NUM_ST}<br>
+      <b>Shape Area:</b> {Shape__Area}<br>
+      <b>Shape Length:</b> {Shape__Length}
+    `
+  };
+
+  var featureLayer = new FeatureLayer({
+    url: "https://services2.arcgis.com/bB9Y1bGKerz1PTl5/ArcGIS/rest/services/STL_Neighborhood/FeatureServer/0",
+    outFields: ["*"], // include all fields
+    popupTemplate: template
+  });
+
+  /*
+  featureLayer.renderer = {
+    type: "simple",  
+    symbol: {
+      type: "simple-marker",  
+      size: 6,
+      color: "red",
+      outline: {  
+        width: 0.5,
+        color: "white"
+      }
+    }
+  };
+  */
+
+  map.add(featureLayer);
+
+});
